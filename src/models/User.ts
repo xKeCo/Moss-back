@@ -45,18 +45,8 @@ class User {
   })
   public password!: string;
 
-  // @prop({
-  //   type: String,
-  //   required: [true, 'Role is required.'],
-  //   enum: ['A', 'U'],
-  //   default: 'U',
-  //   uppercase: true,
-  // })
-  // public role!: 'A' | 'U';
-
   @prop({ type: String, required: true, lowercase: true })
   public photoURL!: string;
 }
 
-// Change _id to id
 export const UserModel = getModelForClass(User);

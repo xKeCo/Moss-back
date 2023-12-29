@@ -13,6 +13,7 @@ import { dbConnection } from './database/config';
 // Routes
 import authRouter from './routes/auth';
 import patientRouter from './routes/patient';
+import treatmentRouter from './routes/treatment';
 
 const app = express();
 
@@ -40,6 +41,9 @@ app.use('/api/auth', authRouter);
 
 // Patient
 app.use('/api/patients', patientRouter);
+
+// Treatment
+app.use('/api/treatments', treatmentRouter);
 
 // Port
 app.listen(process.env.PORT, () => {

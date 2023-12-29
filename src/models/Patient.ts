@@ -1,11 +1,24 @@
 import { prop, getModelForClass, modelOptions, pre } from '@typegoose/typegoose';
 
+interface IBasicInformation {
+  gender: 'M' | 'F' | 'O' | '';
+  bloodType: 'O+' | 'O-' | 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | '';
+  birthDate: Date;
+  birthPlace: string;
+  height: string;
+  weight: string;
+  maritalStatus: 'S' | 'C' | 'V' | 'D' | 'M' | '';
+  occupation: string;
+}
+
 @modelOptions({
   schemaOptions: {
     timestamps: true,
   },
+  options: {
+    allowMixed: 0,
+  },
 })
-// Capitalize name when save
 @pre<Patient>('save', async function (next) {
   const patient = this;
 
@@ -58,17 +71,7 @@ class Patient {
   public photoURL!: string;
 
   @prop({ type: Object, required: true })
-  public basicInformation!: {
-    gender: 'M' | 'F' | 'O' | '';
-    bloodType: 'O+' | 'O-' | 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | '';
-    birthDate: Date;
-    age: string;
-    birthPlace: string;
-    height: string;
-    weight: string;
-    maritalStatus: 'S' | 'C' | 'V' | 'D' | 'M' | '';
-    occupation: string;
-  };
+  public basicInformation!: IBasicInformation;
 
   @prop({ type: Object, required: true })
   public contactInformation!: {
@@ -99,5 +102,4 @@ class Patient {
   public savedFullInformation!: boolean;
 }
 
-// Change _id to id
 export const PatientModel = getModelForClass(Patient);
