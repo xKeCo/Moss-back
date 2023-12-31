@@ -53,7 +53,38 @@ export const getTreatments = async (req: any, res = response) => {
 };
 
 // Get Treatment by Patient Id
-export const getTreatmentByPatient = async (req: any, res = response) => {
+export const getTreatmentByTreatmentId = async (req: any, res = response) => {
+  const { treatmentId, patientId } = req.params;
+
+  try {
+    const treatment = await TreatmentModel.find({
+      _id: treatmentId,
+      patientId,
+    });
+
+    if (!treatment.length) {
+      return res.status(404).json({
+        ok: false,
+        msg: 'No existe un tratamiento con este id para este paciente',
+      });
+    }
+
+    res.json({
+      ok: true,
+      msg: 'getTreatmentByTreatmentId',
+      treatment,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: 'Por favor hable con el administrador',
+    });
+  }
+};
+
+// Get Treatment by Patient Id
+export const getTreatmentByPatientId = async (req: any, res = response) => {
   const id = req.params.id;
 
   try {
@@ -70,7 +101,7 @@ export const getTreatmentByPatient = async (req: any, res = response) => {
 
     res.json({
       ok: true,
-      msg: 'getTreatmentByPatient',
+      msg: 'getTreatmentByPatientId',
       treatment,
     });
   } catch (error) {
@@ -97,11 +128,11 @@ export const updateTreatment = async (req: any, res = response) => {
     }
 
     const totalPrice = req.body.realTxPlan.reduce((acc: number, curr: IRealTxPlan) => {
-      return acc + curr.txPrice;
+      return acc + Number(curr.txPrice);
     }, 0);
 
     const totalPaid = req.body.txEvolutions.reduce((acc: number, curr: ITxEvolution) => {
-      return acc + curr.txEvolPayment;
+      return acc + Number(curr.txEvolPayment);
     }, 0);
 
     const balance = totalPrice - totalPaid;

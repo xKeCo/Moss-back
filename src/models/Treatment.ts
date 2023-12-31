@@ -1,11 +1,12 @@
 import { prop, getModelForClass, modelOptions, pre } from '@typegoose/typegoose';
 
 export interface IRealTxPlan {
+  txId: string;
   txPhase: string;
   txActivity: string;
   txETT: string;
   txStartDate: string;
-  txPrice: number;
+  txPrice: string;
 }
 
 export interface ITxEvolution {
@@ -13,7 +14,26 @@ export interface ITxEvolution {
   txEvolDesc: string;
   txEvolId: string;
   txEvolDoc: string;
-  txEvolPayment: number;
+  txEvolPayment: string;
+}
+
+export interface IToothState {
+  tooth: number;
+  cavities: {
+    center: number;
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+  };
+  extract: number;
+  absent: number;
+  crown: number;
+  endodontics: number;
+  filter: number;
+  unerupted: number;
+  implant: number;
+  regeneration: number;
 }
 
 @modelOptions({
@@ -24,23 +44,19 @@ export interface ITxEvolution {
     allowMixed: 0,
   },
 })
-// make this
-// Get total price from realtxplan each txPrice and sum all and save in totalPrice
-// get totalPaid from txEvolutions each txEvolPayment and sum all and save in totalPaid
-// Do this on save and update
 @pre<Treatment>('save', async function (next) {
   const treatment = this;
 
   if (!treatment.isModified('realTxPlan')) return next();
 
   const totalPrice = treatment.realTxPlan.reduce((acc, curr) => {
-    return acc + curr.txPrice;
+    return acc + Number(curr.txPrice);
   }, 0);
 
-  treatment.totalPrice = totalPrice;
+  treatment.totalPrice = Number(totalPrice);
 
   const totalPaid = treatment.txEvolutions.reduce((acc, curr) => {
-    return acc + curr.txEvolPayment;
+    return acc + Number(curr.txEvolPayment);
   }, 0);
 
   treatment.totalPaid = totalPaid;
@@ -56,11 +72,11 @@ class Treatment {
   @prop({ type: String, required: true, maxlength: 150 })
   public prognosis!: string;
 
-  @prop({ type: String, required: true, maxlength: 150 })
-  public treatment!: string;
-
-  @prop({ type: String, required: true, maxlength: 10 })
+  @prop({ type: String, required: true, maxlength: 10, unique: true })
   public patientId!: string;
+
+  @prop({ type: Array, required: true })
+  public initialOdontogram!: Array<IToothState>;
 
   @prop({
     type: Array<IRealTxPlan>,

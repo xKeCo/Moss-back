@@ -52,7 +52,7 @@ class Patient {
   })
   public dniType!: 'CC' | 'TI' | 'O' | '';
 
-  @prop({ type: String, required: true, unique: true })
+  @prop({ type: String, required: true, maxlength: 10, unique: true })
   public dniNumber!: string;
 
   @prop({
