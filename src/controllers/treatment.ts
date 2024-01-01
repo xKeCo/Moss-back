@@ -93,7 +93,7 @@ export const getTreatmentByTreatmentId = async (req: any, res = response) => {
     if (!treatment.length) {
       return res.status(404).json({
         ok: false,
-        msg: 'No existe un tratamiento con este id para este paciente',
+        msg: `No existe un tratamiento registrado con el ID ${treatmentId} para este paciente.`,
       });
     }
 
@@ -109,11 +109,23 @@ export const getTreatmentByTreatmentId = async (req: any, res = response) => {
       msg: 'getTreatmentByTreatmentId',
       treatment: treatment[0],
     });
-  } catch (error) {
-    console.log(error);
+  } catch (error: any) {
+    console.log({
+      errorName: error.name,
+      errorStack: error.stack.split('\n')[0],
+      errorKind: error.kind,
+    });
+
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({
+        ok: false,
+        msg: `No existe un tratamiento registrado con el ID ${treatmentId} para este paciente.`,
+      });
+    }
+
     res.status(500).json({
       ok: false,
-      msg: 'Por favor hable con el administrador',
+      msg: 'Ha ocurrido un error, intentelo de nuevo mas tarde.',
     });
   }
 };
