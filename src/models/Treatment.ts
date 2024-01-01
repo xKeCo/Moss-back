@@ -7,6 +7,7 @@ export interface IRealTxPlan {
   txETT: string;
   txStartDate: string;
   txPrice: string;
+  txActive?: boolean;
 }
 
 export interface ITxEvolution {
@@ -15,6 +16,7 @@ export interface ITxEvolution {
   txEvolId: string;
   txEvolDoc: string;
   txEvolPayment: string;
+  txEvolActive?: boolean;
 }
 
 export interface IToothState {
@@ -44,33 +46,15 @@ export interface IToothState {
     allowMixed: 0,
   },
 })
-@pre<Treatment>('save', async function (next) {
-  const treatment = this;
-
-  if (!treatment.isModified('realTxPlan')) return next();
-
-  const totalPrice = treatment.realTxPlan.reduce((acc, curr) => {
-    return acc + Number(curr.txPrice);
-  }, 0);
-
-  treatment.totalPrice = Number(totalPrice);
-
-  const totalPaid = treatment.txEvolutions.reduce((acc, curr) => {
-    return acc + Number(curr.txEvolPayment);
-  }, 0);
-
-  treatment.totalPaid = totalPaid;
-
-  treatment.balance = totalPrice - totalPaid;
-
-  next();
-})
 class Treatment {
   @prop({ type: String, required: true, maxlength: 150 })
   public diagnosis!: string;
 
   @prop({ type: String, required: true, maxlength: 150 })
   public prognosis!: string;
+
+  @prop({ type: String, maxlength: 150 })
+  public patientName?: string;
 
   @prop({ type: String, required: true, maxlength: 10, unique: true })
   public patientId!: string;

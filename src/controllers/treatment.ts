@@ -1,5 +1,5 @@
 import { response } from 'express';
-import { IRealTxPlan, ITxEvolution, TreatmentModel } from '../models';
+import { IRealTxPlan, ITxEvolution, PatientModel, TreatmentModel } from '../models';
 
 // Create Patient
 export const createTreatment = async (req: any, res = response) => {
@@ -17,12 +17,40 @@ export const createTreatment = async (req: any, res = response) => {
       });
     }
 
+    treatment.realTxPlan = treatment.realTxPlan.map((tx) => {
+      return {
+        ...tx,
+        txActive: true,
+      };
+    });
+
+    treatment.txEvolutions = treatment.txEvolutions.map((tx) => {
+      return {
+        ...tx,
+        txEvolActive: true,
+      };
+    });
+
+    const totalPrice = treatment.realTxPlan.reduce((acc, curr) => {
+      return acc + Number(curr.txPrice);
+    }, 0);
+
+    treatment.totalPrice = Number(totalPrice);
+
+    const totalPaid = treatment.txEvolutions.reduce((acc, curr) => {
+      return acc + Number(curr.txEvolPayment);
+    }, 0);
+
+    treatment.totalPaid = totalPaid;
+
+    treatment.balance = totalPrice - totalPaid;
+
     await treatment.save();
 
     res.json({
       ok: true,
       msg: 'Treatment created successfully',
-      treatment,
+      treatment: treatment,
     });
   } catch (error: any) {
     console.log(error);
@@ -41,7 +69,7 @@ export const getTreatments = async (req: any, res = response) => {
     res.json({
       ok: true,
       msg: 'getTreatments',
-      treatments,
+      treatments: treatments[0],
     });
   } catch (error) {
     console.log(error);
@@ -69,10 +97,17 @@ export const getTreatmentByTreatmentId = async (req: any, res = response) => {
       });
     }
 
+    const patient = await PatientModel.findOne(
+      { dniNumber: patientId },
+      { _id: 0, name: 1 }
+    );
+
+    treatment[0].patientName = patient?.name || '';
+
     res.json({
       ok: true,
       msg: 'getTreatmentByTreatmentId',
-      treatment,
+      treatment: treatment[0],
     });
   } catch (error) {
     console.log(error);
@@ -92,17 +127,21 @@ export const getTreatmentByPatientId = async (req: any, res = response) => {
       patientId: id,
     });
 
-    if (!treatment) {
+    if (!treatment.length) {
       return res.status(404).json({
         ok: false,
         msg: 'No existe un tratamiento para este paciente',
       });
     }
 
+    const patient = await PatientModel.findOne({ dniNumber: id }, { _id: 0, name: 1 });
+
+    treatment[0].patientName = patient?.name || '';
+
     res.json({
       ok: true,
       msg: 'getTreatmentByPatientId',
-      treatment,
+      treatment: treatment[0],
     });
   } catch (error) {
     console.log(error);
@@ -126,6 +165,20 @@ export const updateTreatment = async (req: any, res = response) => {
         msg: 'No existe un tratamiento para este paciente',
       });
     }
+
+    req.body.realTxPlan = req.body.realTxPlan.map((tx: IRealTxPlan) => {
+      return {
+        ...tx,
+        txActive: true,
+      };
+    });
+
+    req.body.txEvolutions = req.body.txEvolutions.map((tx: ITxEvolution) => {
+      return {
+        ...tx,
+        txEvolActive: true,
+      };
+    });
 
     const totalPrice = req.body.realTxPlan.reduce((acc: number, curr: IRealTxPlan) => {
       return acc + Number(curr.txPrice);

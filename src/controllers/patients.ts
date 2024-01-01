@@ -43,7 +43,7 @@ export const getPatients = async (req: any, res = response) => {
     res.json({
       ok: true,
       msg: 'getPatients',
-      patients,
+      patients: patients,
     });
   } catch (error) {
     console.log(error);
@@ -73,7 +73,7 @@ export const getPatientById = async (req: any, res = response) => {
     res.json({
       ok: true,
       msg: 'getPatientById',
-      patient,
+      patient: patient[0],
     });
   } catch (error) {
     console.log(error);
